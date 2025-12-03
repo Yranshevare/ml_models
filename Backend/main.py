@@ -1,18 +1,23 @@
 from flask import Flask, request, jsonify
 import pandas as pd
+from flask_cors import CORS, cross_origin
 import pickle
 
 app = Flask(__name__)
+CORS(app)
 
 model = pickle.load(open("car_price_model_final.pkl", "rb"))
 
 
 @app.post('/predict')
+@cross_origin()
 def predict():
     try:
         data = request.get_json()
 
-        if isinstance(data["year"], int):
+        
+
+        if not isinstance(data["year"], int):
             return jsonify({"error": "Year must be a string"}), 400
         
         if not isinstance(data["km_driven"], int):
@@ -28,8 +33,9 @@ def predict():
 
         # Predict
         prediction = model.predict(df)
+        print(prediction)
 
-        ans = jsonify({"prediction": str(prediction)})
+        ans = jsonify({"prediction": int(prediction)})
 
         return ans
     except Exception as e:
